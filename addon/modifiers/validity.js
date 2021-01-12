@@ -7,27 +7,37 @@ const reduceValidators = async (validators, ...args) => {
   return errors.reduce((a, b) => [...a, ...b], []);
 };
 
+function getInput(element) {
+  if (element.tagName === 'INPUT') {
+    return element;
+  }
+
+  return element.querySelector('input');
+}
+
 export default modifier(function validity(
   element,
   validators,
   { on: eventNames = 'change,input,blur' }
 ) {
+  let input = getInput(element);
+
   let autoValidationEvents = commaSeperate(eventNames);
-  let autoValidationHandler = () => validate(element);
+  let autoValidationHandler = () => validate(input);
   let validateHandler = async () => {
-    let [error = ''] = await reduceValidators(validators, element);
-    element.checkValidity();
-    element.setCustomValidity(error);
-    element.dispatchEvent(new CustomEvent('validated'));
+    let [error = ''] = await reduceValidators(validators, input);
+    input.checkValidity();
+    input.setCustomValidity(error);
+    input.dispatchEvent(new CustomEvent('validated'));
   };
-  element.addEventListener('validate', validateHandler);
+  input.addEventListener('validate', validateHandler);
   autoValidationEvents.forEach(eventName => {
-    element.addEventListener(eventName, autoValidationHandler);
+    input.addEventListener(eventName, autoValidationHandler);
   });
   return () => {
-    element.removeEventListener('validate', validateHandler);
+    input.removeEventListener('validate', validateHandler);
     autoValidationEvents.forEach(eventName => {
-      element.removeEventListener(eventName, autoValidationHandler);
+      input.removeEventListener(eventName, autoValidationHandler);
     });
   };
 });
