@@ -28,7 +28,7 @@ export default modifier(function validity(
     let [error = ''] = await reduceValidators(validators, input);
     input.checkValidity();
     input.setCustomValidity(error);
-    input.dispatchEvent(new CustomEvent('validated'));
+    input.dispatchEvent(new CustomEvent('validated', { bubbles: true }));
   };
   input.addEventListener('validate', validateHandler);
   autoValidationEvents.forEach(eventName => {
